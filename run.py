@@ -1,6 +1,6 @@
 import cv2
 import sys
-#from face_detection import face
+from face_detection import face
 from keras.models import load_model
 import numpy as np
 import matplotlib.pyplot as plt
@@ -30,36 +30,26 @@ def test(image):
     
 
 def live():
-	cap=cv2.VideoCapture(1)
+	fd=face()
+	cap=cv2.VideoCapture(0)
 	ret=True
-	test()
 	while ret:
 	    ret,frame=cap.read()
-	    frame=cv2.flip(frame,1)
 	    detected,x,y,w,h=fd.detectFace(frame)
 
 	    if(detected is not None):
 	        f=detected
-	        detected=cv2.resize(detected,(160,160))
+	        detected=cv2.cvtColor(detected, cv2.COLOR_BGR2GRAY)
+	        detected=cv2.resize(detected,(48,48))
+	        detected = detected[:, :, np.newaxis]
 	        detected=detected.astype('float')/255.0
 	        detected=np.expand_dims(detected,axis=0)
-	       # feed=e.calculate(detected)
-	        #feed=np.expand_dims(feed,axis=0)
 	        prediction=model.predict(detected)[0]
 
-	        result=int(np.argmax(prediction))
-	        for i in people:
-	            if(result==i):
-	                label=people[i]
-	                if(a[i]==0):
-	                    data.update(label)
-	                a[i]=1
-	                abhi=i
+	        index=int(np.argmax(prediction))
+	        print("Result: ", result[index])
 
-	        #data.update(label)
-	        cv2.putText(frame,label,(x,y),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,255),2)
-	        if(a[abhi]==1):
-	            cv2.putText(frame,"your attendance is complete",(x,y-30),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,255),2)
+	        #cv2.putText(frame, (x,y),cv2.FONT_HERSHEY_SIMPLEX,1,(255,255,255),2)
 	        cv2.rectangle(frame,(x,y),(x+w,y+h),(252,160,39),3)
 	        cv2.imshow('onlyFace',f)
 	    cv2.imshow('frame',frame)
@@ -67,11 +57,7 @@ def live():
 	        break
 	cap.release()
 	cv2.destroyAllWindows()
-	data.export_csv()
 
-
-def argument(file):
-	print("Hello", file)
 
 if __name__ == '__main__':
 	if len(sys.argv) > 1:
